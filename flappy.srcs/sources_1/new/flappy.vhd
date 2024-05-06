@@ -23,6 +23,7 @@ ARCHITECTURE Behavioral OF flappy IS
     SIGNAL S_red, S_green, S_blue : STD_LOGIC; --_VECTOR (3 DOWNTO 0);
     Signal P_red, P_green, P_blue, B_red, B_green, B_Blue, P_red2, P_green2, P_blue2 : STD_LOGIC;
  --   SIGNAL P_red, P_green, P_blue : STD_LOGIC; --_VECTOR (3 DOWNTO 0);
+ signal collision : std_logic := '0';
 
     SIGNAL S_vsync : STD_LOGIC;
     SIGNAL S_pixel_row, S_pixel_col : STD_LOGIC_VECTOR (10 DOWNTO 0);
@@ -102,12 +103,7 @@ COMPONENT pipes IS
 		blue      : OUT STD_LOGIC
 	   	);
 END COMPONENT;
-    
-    
-    
-    
-    
- 
+
     
     COMPONENT vga_sync IS
         PORT (
@@ -154,22 +150,24 @@ S_BLUE <= P_BLUE AND B_BLUE AND P_BLUE2;
         p_BTNC <= c_BTNC;
        WAIT UNTIL RISING_EDGE(TOGGLE);
        if(c_BTNU = '1') THEN
-             bird_pos <=  CONV_STD_LOGIC_VECTOR(300, 11); --initally positions     
-             wing_pos <=  CONV_STD_LOGIC_VECTOR(300, 11);  
-           --   pipe_onex <= conv_std_logic_vector(280, 11);
-            --  pipe_twox <= conv_std_logic_vector(560, 11);
+             bird_pos <=  CONV_STD_LOGIC_VECTOR(320, 11); --initally positions     
+             wing_pos <=  CONV_STD_LOGIC_VECTOR(320, 11);
       else  
             if(O_RST = '1' and GAME_STARTS = '0') THEN   ---resets for new game
                 GAME_STARTS <= '1';
             elsif(p_BTNC = '1' and C_BTNC = '0' AND bird_pos>=0 AND bird_pos<540 and GAME_STARTS ='1') THEN
                 bird_pos <= bird_pos -30;
                 wing_pos <= wing_pos -30;   
-            elsif(bird_pos < 540 and Game_Starts = '1') THEN
+            elsif(bird_pos < 540 and Game_Starts = '1' AND COLLISION = '0') THEN
                 bird_pos <= bird_pos +4;
                 wing_pos <= wing_pos +4;
-            elsif(bird_pos >= 540 and Game_Starts = '1') THEN
+            elsif(bird_pos >= 540 and Game_Starts = '1'  AND COLLISION = '0') THEN
                 bird_pos <= CONV_STD_LOGIC_VECTOR(540, 11);
-                Game_STARTS <= '0';
+                Game_Starts <= '0';
+            elsif(COLLISION = '1') THEN
+                Game_Starts <= '0';
+                bird_pos <=  bird_pos;
+               wing_pos <=  wing_pos;
         end if;
       end if;
     end process;
@@ -180,17 +178,17 @@ S_BLUE <= P_BLUE AND B_BLUE AND P_BLUE2;
 BEGIN
     WAIT UNTIL rising_edge(toggle);
     
-     IF(GAME_STARTS = '0') THEN
+     IF(GAME_STARTS = '0' or Collision = '1') THEN
                t_pipe_y <= 140;
                 t_pipe_size <= 140;
                 b_pipe_y <= 520;
-                    b_pipe_size <= 80;
-              pipe_x_motion <= "00000000000";
+                b_pipe_size <= 80;
+              pipe_x_motion <= "00000000000";   
      ELSE
-        IF (pipe_onex + pipe_w > 0 and GAME_STARTS = '1') THEN
+        IF (pipe_onex  > pipe_w and GAME_STARTS = '1') THEN
         pipe_x_motion <= "11111111000"; -- -4 pixels
        
-        ELSIF (pipe_onex + pipe_w <= 0) THEN
+        ELSIF (pipe_onex  <= pipe_w and GAME_STARTS = '1') THEN
             IF (t_pipe_y > 40) THEN
                 t_pipe_y <= t_pipe_y - 40;
                 t_pipe_size <= t_pipe_size - 40;
@@ -209,17 +207,29 @@ BEGIN
 END PROCESS;
 
     
--- collision : process
- --   BEGIN    
-  --     WAIT UNTIL RISING_EDGE(TOGGLE);
-   --    If (180 + 10) >= (pipe_onex - 40) AND
-    --        (180 - 10) <= (pipe_onex + 40) AND
-    --        (bird_pos +10) >= (t_pipe_y - t_pipe_size) AND
-      --      (bird_pos + 10) <= (t_pipe_y + t_pipe_size) THEN
-      --      GAME_STARTS <= '0';
-     -- END IF;       
-       
- --   END PROCESS;
+ collide : process
+   BEGIN    
+       WAIT UNTIL RISING_EDGE(TOGGLE); 
+       --logic for first pair pipe
+      IF (180+10) >= pipe_onex-pipe_w AND (180 - 10) <= (pipe_onex + pipe_w) THEN
+         If ( (bird_pos +10) >= (t_pipe_y - t_pipe_size) AND (bird_pos-10) <= (t_pipe_y + t_pipe_size) ) OR
+            ( (bird_pos +10) >= (b_pipe_y - b_pipe_size) AND (bird_pos-10) <= (b_pipe_y + b_pipe_size) ) THEN
+            collision <= '1';
+          else 
+            collision <= '0'; --somehow this made the code work idk
+          END IF;
+       --logic for second pair pipe 
+      ELSIF (180+10) >= pipe_twox-pipe_w AND (180 - 10) <= (pipe_twox + pipe_w) THEN
+         If ( (bird_pos +10) >= (t_pipe_y2 - t_pipe_size2) AND (bird_pos-10) <= (t_pipe_y2 + t_pipe_size2) ) OR
+            ( (bird_pos +10) >= (b_pipe_y2 - b_pipe_size2) AND (bird_pos-10) <= (b_pipe_y2 + b_pipe_size2) ) THEN
+            collision <= '1';
+          else 
+            collision <= '0'; --somehow this made the code work idk    
+         END IF;
+       else
+              collision <= '0';
+      END IF;        
+   END PROCESS;
 
     
     
@@ -307,17 +317,6 @@ END PROCESS;
     
 );                                            
                                                  
-    
-   
-   
-   
-   
-   
-   
-    
-    
-    
-    
     vga_driver : vga_sync
     PORT MAP(--instantiate vga_sync component
         pixel_clk => pxl_clk, 
