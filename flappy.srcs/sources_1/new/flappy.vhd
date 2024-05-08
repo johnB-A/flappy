@@ -201,10 +201,11 @@ BEGIN
               pipe_x_motion <= "00000000000";   
      ELSE
         IF (pipe_onex  > pipe_w and GAME_STARTS = '1') THEN
+        pipe_onex <= pipe_onex + pipe_x_motion;
         pipe_x_motion <= "11111111000"; -- -4 pixels
        
         ELSIF (pipe_onex  <= pipe_w and GAME_STARTS = '1') THEN
-             pipe_onex <= CONV_STD_LOGIC_VECTOR(560,11);
+        pipe_onex <= CONV_STD_LOGIC_VECTOR(960,11);
             IF (t_pipe_y > 40) THEN
                 t_pipe_y <= t_pipe_y - 40;
                 t_pipe_size <= t_pipe_size - 40;
@@ -218,7 +219,6 @@ BEGIN
            END IF; 
         END IF; 
   END IF;
-    pipe_onex <= pipe_onex + pipe_x_motion; 
     pipe_twox <= pipe_twox+pipe_x_motion;
 END PROCESS;
  collide : process
