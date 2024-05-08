@@ -36,7 +36,7 @@ ARCHITECTURE Behavioral OF flappy IS
     SIGNAL GAME_STARTS : std_logic := '0';--game waiting to start
     SIGNAL O_RST, c_BTNU: std_logic;
     signal toggle : std_logic := '0';
-    
+    SIGNAL conditions : std_logic_vector(1 downto 0);
     
     --pipes
     CONSTANT pipe_w    : INTEGER := 40; --radius of pipe;
@@ -54,6 +54,8 @@ ARCHITECTURE Behavioral OF flappy IS
 	SIGNAL b_pipe_y2  : INTEGER := 500; -- left outer edge of bird l --530
 	
 	signal pipe_x_motion : STD_LOGIC_VECTOR(10 DOWNTO 0);
+	type state_type is (IDLE, INCREASE_HEIGHT, DECREASE_HEIGHT);
+	signal PS, NS : state_type; 
    
     
     component debounce is
@@ -103,7 +105,12 @@ COMPONENT pipes IS
 		blue      : OUT STD_LOGIC
 	   	);
 END COMPONENT;
-
+    
+    
+    
+    
+    
+ 
     
     COMPONENT vga_sync IS
         PORT (
@@ -131,6 +138,7 @@ BEGIN
 S_RED <= P_RED AND B_RED AND P_RED2;
 S_GREEN <= P_GREEN AND B_GREEN AND P_GREEN2;
 S_BLUE <= P_BLUE AND B_BLUE AND P_BLUE2;
+
     
     refresh: process(clk_in) is
     begin
@@ -145,39 +153,46 @@ S_BLUE <= P_BLUE AND B_BLUE AND P_BLUE2;
     end process;
         
     
-    bird_motion: process is
-    begin
+    bird_motion: PROCESS IS
+    BEGIN
         p_BTNC <= c_BTNC;
-       WAIT UNTIL RISING_EDGE(TOGGLE);
-       if(c_BTNU = '1') THEN
-             bird_pos <=  CONV_STD_LOGIC_VECTOR(320, 11); --initally positions     
-             wing_pos <=  CONV_STD_LOGIC_VECTOR(320, 11);
-      else  
-            if(O_RST = '1' and GAME_STARTS = '0') THEN   ---resets for new game
+        conditions <= COLLISION & GAME_STARTS; -- combines collision and game_starts
+        WAIT UNTIL RISING_EDGE(TOGGLE);
+            if(c_BTNU = '1') THEN
+                bird_pos <=  CONV_STD_LOGIC_VECTOR(320, 11); --initally positions     
+                wing_pos <=  CONV_STD_LOGIC_VECTOR(320, 11);
+            else
+                if(O_RST = '1' and GAME_STARTS = '0') THEN   ---resets for new game
                 GAME_STARTS <= '1';
-            elsif(p_BTNC = '1' and C_BTNC = '0' AND bird_pos>=0 AND bird_pos<540 and GAME_STARTS ='1') THEN
-                bird_pos <= bird_pos -30;
-                wing_pos <= wing_pos -30;   
-            elsif(bird_pos < 540 and Game_Starts = '1' AND COLLISION = '0') THEN
-                bird_pos <= bird_pos +4;
-                wing_pos <= wing_pos +4;
-            elsif(bird_pos >= 540 and Game_Starts = '1'  AND COLLISION = '0') THEN
-                bird_pos <= CONV_STD_LOGIC_VECTOR(540, 11);
-                Game_Starts <= '0';
-            elsif(COLLISION = '1') THEN
-                Game_Starts <= '0';
-                bird_pos <=  bird_pos;
-               wing_pos <=  wing_pos;
-        end if;
-      end if;
+                else
+                    case(conditions) is
+                        WHEN "01" =>   --Game is on and there is no collision
+                            if(p_BTNC = '1' and C_BTNC = '0' AND bird_pos>=0 AND bird_pos<540) THEN --if button released and valid range bird moves up
+                                bird_pos <= bird_pos -30;
+                                wing_pos <= wing_pos -30;  
+                            elsif(bird_pos < 540) THEN  --else drops 4 pixels/frame
+                                bird_pos <= bird_pos +4;
+                                wing_pos <= wing_pos +4;
+                            elsif(bird_pos >= 540) THEN  --game ends
+                                bird_pos <= CONV_STD_LOGIC_VECTOR(540, 11);
+                                Game_Starts <= '0';
+                            end if;
+                       WHEN OTHERS => --Collision
+                            IF(conditions = "11") then
+                                GAME_STARTS <= '0';
+                                bird_pos <= bird_pos;
+                                wing_pos <= wing_pos;
+                             END IF;
+                     end case;
+                 end if;
+            end if;
     end process;
     
    
  
- firstpipe : PROCESS
+firstpipe : PROCESS
 BEGIN
     WAIT UNTIL rising_edge(toggle);
-    
      IF(GAME_STARTS = '0' or Collision = '1') THEN
                t_pipe_y <= 140;
                 t_pipe_size <= 140;
@@ -189,6 +204,7 @@ BEGIN
         pipe_x_motion <= "11111111000"; -- -4 pixels
        
         ELSIF (pipe_onex  <= pipe_w and GAME_STARTS = '1') THEN
+             pipe_onex <= CONV_STD_LOGIC_VECTOR(560,11);
             IF (t_pipe_y > 40) THEN
                 t_pipe_y <= t_pipe_y - 40;
                 t_pipe_size <= t_pipe_size - 40;
@@ -205,8 +221,6 @@ BEGIN
     pipe_onex <= pipe_onex + pipe_x_motion; 
     pipe_twox <= pipe_twox+pipe_x_motion;
 END PROCESS;
-
-    
  collide : process
    BEGIN    
        WAIT UNTIL RISING_EDGE(TOGGLE); 
@@ -229,11 +243,7 @@ END PROCESS;
        else
               collision <= '0';
       END IF;        
-   END PROCESS;
-
-    
-    
-    
+   END PROCESS;  
     debouncing : debounce
     PORT MAP(
         i_clk => clk_in,
@@ -315,8 +325,7 @@ END PROCESS;
 		green   => P_green2,
 		blue    => P_blue2
     
-);                                            
-                                                 
+);  
     vga_driver : vga_sync
     PORT MAP(--instantiate vga_sync component
         pixel_clk => pxl_clk, 
