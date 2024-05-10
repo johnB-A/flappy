@@ -88,8 +88,8 @@ set_property -dict {PACKAGE_PIN T10 IOSTANDARD LVCMOS33} [get_ports {SEG7_seg[6]
 	SIGNAL wing_y  : STD_LOGIC_VECTOR(10 DOWNTO 0) := CONV_STD_LOGIC_VECTOR(300, 11);
   ```
   * The bird initally starts towards the left of the screen at the middle height. The bird is stationary horiztonally but moves vertically
-    
-   ```
+
+  ```
   birdie: draw_coord port map(
     v_sync => v_sync,
     pixel_row => pixel_row,
@@ -97,8 +97,8 @@ set_property -dict {PACKAGE_PIN T10 IOSTANDARD LVCMOS33} [get_ports {SEG7_seg[6]
     x_size => bird_x,
     y_size => bird_y,
     b_size => bird_size,
-    shape_on => bird_on   
-);
+    shape_on => bird_on
+   );
 ```
 
 wings: draw_coord port map(
