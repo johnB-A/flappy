@@ -20,7 +20,7 @@ begin
 	process(i_clk)
 	begin
 		if(rising_edge(i_clk)) then
-			if(to_integer(unsigned(counter)) < 1048575) then --10.6 ms
+			if(to_integer(unsigned(counter)) < count) then --10.6 ms
 				counter <= std_logic_vector(unsigned(counter) + 1);
 				sample <= sample(3 downto 0) & i_btn; --keep sampling
 			else  --if polling time is met
@@ -33,10 +33,8 @@ begin
 				end if;
 			end if;
 		end if;
-	end process;
-					
+	end process;			
 	o_deb <= r_deb;			
-	
 end RTL;
 	
 	

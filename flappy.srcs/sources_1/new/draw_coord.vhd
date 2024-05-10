@@ -17,7 +17,6 @@ ENTITY draw_coord IS
 END draw_coord;
 
 ARCHITECTURE Behavioral OF draw_coord IS
-
 BEGIN
 	draw : PROCESS (x_size, y_size, pixel_row, pixel_col) IS
 		VARIABLE vx, vy : STD_LOGIC_VECTOR (10 DOWNTO 0);
@@ -38,8 +37,4 @@ BEGIN
             shape_on <= '0';
         END IF;
     END PROCESS;
-		
-
-	
-	 
 END Behavioral;
