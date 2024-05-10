@@ -28,5 +28,5 @@ Very similar to the standard Flappy Bird game, the bird must avoid the obstacles
 
 
 ## Description of Inputs and Outputs going from the Vivado Project to the Nexys board
-![image](https://github.com/johnB-A/flappybird/assets/156035355/d39281e9-20d8-4775-974d-a70ab8e13cac)
-
+`set_property -dict { PACKAGE_PIN N17 IOSTANDARD LVCMOS33 } [get_ports { BTNC }]; #IO_L9P_T1_DQS_14 Sch=btnc
+set_property -dict { PACKAGE_PIN P17 IOSTANDARD LVCMOS33 } [get_ports { RESET }]; #IO_L12P_T1_MRCC_14 Sch=btnl`
