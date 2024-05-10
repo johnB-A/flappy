@@ -69,7 +69,7 @@ set_property -dict {PACKAGE_PIN R10 IOSTANDARD LVCMOS33} [get_ports {SEG7_seg[5]
 set_property -dict {PACKAGE_PIN T10 IOSTANDARD LVCMOS33} [get_ports {SEG7_seg[6]}]
 ```
 * The constraints above are basically the same we used for preivous labs involving displaying the vga driver and anodes on the Board
-## LOGIC OF THE GAME AND MODIFICATIONS)
+## LOGIC OF THE GAME AND MODIFICATIONS
 * 7 out of the 10 files were either from scratch or inspired from previous code
 * Since we are using a buttons to control the state of the game, we avoided the problem of bouncing by creating a debounce module
 ![image](https://github.com/johnB-A/flappybird/assets/156035355/8e711efc-26f6-4e73-a311-09ea4ff1ffee)
