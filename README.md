@@ -1,4 +1,4 @@
-# flappy# CPE 487 PROJECT: Flappy Bird
+##CPE 487 PROJECT: Flappy Bird##
 #INTRODUCTION
 The project is about creating a version of Flappy Bird implementing Hardware Description Language - VHDL. 
 **RULES**
