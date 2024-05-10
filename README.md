@@ -324,7 +324,21 @@ END PROCESS;
   * The biggest issue was the transitioning of the pipe which it wasn't doing it properly beause pipe_onexmotion was being overwritten. 
   * Also time constraint, since I also had to study for Controls final which was around the same time as this project, made difficult to juggle both thinsg.
 
-## 
+## Summary
+John Responsible for:
+* Creating the debounce
+* Creating the pipe module
+* Bird logic movement
+* Input generator
+* Score logic
+* Top file connecting all the modules together
+
+ Lawrence:
+ *Helped on score logic
+ *Shape of the bird and wing
+ *Pipe shape
+
+
 
 
   
