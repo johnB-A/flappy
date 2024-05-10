@@ -1,5 +1,12 @@
 # CPE 487 PROJECT: Flappy Bird
 
+
+
+https://github.com/johnB-A/flappybird/assets/123036555/8194c7ad-9ba3-4a69-9cb0-878adb287b99
+
+
+
+
 ## INTRODUCTION
 The project is about creating a version of Flappy Bird implementing Hardware Description Language - VHDL. 
 **RULES**
