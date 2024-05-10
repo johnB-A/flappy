@@ -92,6 +92,7 @@ set_property -dict {PACKAGE_PIN T10 IOSTANDARD LVCMOS33} [get_ports {SEG7_seg[6]
     b_size => bird_size,
     shape_on => bird_on   
 );
+```
 
 wings: draw_coord port map(
     v_sync => v_sync,
@@ -136,10 +137,104 @@ END PROCESS;
 bird_pos <= bird_y;
 wing_pos <= wing_y;		
 END Behavioral;
+```
 *The idea is that the bird moves when button is released, for this to occur the current button must be low, the previous value was high, which means there is a falling edge. That's why we have the p_BTNC signal
 *The bird logic as shown above is also ressponible for the game_on signal, so when the game is off, and RESET high, game starts. This condition won't come into effect if RESET is pressed until the Bird collides, because that's when game_on becomes zero
 *There is no special reason behind the numbers of the movement of the bird, besides trial and error, but the main idea is whne button is released bird moves up the screen 54 pixels, if not then bird falls at a constant 3 pixels down.
 *When Bird reaches ground game ends and it resets the bird back to the default condition, but if tehre is a collision that bird stays in the coordinates of the collision and game ends
 *The size of the bird is 40 diamters wide, and the wing is 20 pixels wide. The wing and bird follow the same speed logic, so that they move as one unit
+```
+birdie: draw_coord port map(
+    v_sync => v_sync,
+    pixel_row => pixel_row,
+    pixel_col => pixel_col,
+    x_size => bird_x,
+    y_size => bird_y,
+    b_size => bird_size,
+    shape_on => bird_on   
+);
+
+wings: draw_coord port map(
+    v_sync => v_sync,
+    pixel_row => pixel_row,
+    pixel_col => pixel_col,
+    x_size => wing_x,
+    y_size => wing_y,
+    b_size => wing_size,
+    shape_on => wing_on   
+);
+```
+PIPES
+* Pipes module is responsible for creating and displaying the pipes on the screen. Also it responsible for the collision logic and the movement
+  ```
+  BEGIN
+	red   <= NOT(pipe_on) AND NOT(pipe_on2); -- color setup for red ball on white background
+	green <= '1';
+	blue  <= NOT(pipe_on) AND NOT(pipe_on2);
+   pipe1 : PROCESS (pixel_row, pixel_col, t_pipe_y, b_pipe_y, t_pipe_y2, b_pipe_y2) IS
+	BEGIN
+	 IF ((pixel_col >= pipe_onex - pipe_w) AND (pixel_col <= pipe_onex + pipe_w)) THEN
+        IF ((pixel_row >= t_pipe_y - t_pipe_size) AND (pixel_row <= t_pipe_y + t_pipe_size)) OR
+           ((pixel_row >= b_pipe_y - b_pipe_size) AND (pixel_row <= b_pipe_y + b_pipe_size)) THEN
+            pipe_on <= '1';
+        ELSE
+            pipe_on <= '0';
+        END IF;
+    ELSE
+        pipe_on <= '0';
+    END IF;
+  END PROCESS;
+
+* The logic behind drawing the pipes since it will more like a pair of two pipes, since they both will have the horizontal axis(column), so it checks if the pixels are within the range of the pipe. Pipe_onex is the center point of the pipe, so the pipe width is half of the width  of the total pipe. Similar logic is applied when creating the height of the pipe, if the pixels are within the boundaries set, it will be green
+* The variables t_pipe_y, t_pipe_size. b_pipe_y, b_pipe_size, are responsible for creating the vertical component of the top and bottom
+* Same logic is applied to the second pipe just different varaibles
+* The module also generates the random heights of the pipe and it's speed
+
+```
+  first_ipe : PROCESS
+  BEGIN    
+    WAIT UNTIL rising_edge(V_sync);
+        IF(GAME_STARTS = '0' or Collision = '1') THEN
+              pipe_onex <= conv_std_logic_vector(500, 11);
+              pipe_onexmotion <= "00000000000";   
+     ELSE
+        IF (pipe_onex  > pipe_w and GAME_STARTS = '1') THEN
+           pipe_onex <= pipe_onex + pipe_onexmotion;
+          pipe_onexmotion <= "11111111100"; -- -4 pixels   
+        ELSIF (pipe_onex  <= pipe_w and GAME_STARTS = '1') THEN
+                cnt <= NOT(cnt);
+                pipe_onex <= CONV_STD_LOGIC_VECTOR(960,11);
+                case RANDOM is
+        	WHEN "000" => t_pipe_y <= 140; t_pipe_size <= 140; b_pipe_y <= 520; b_pipe_size <= 80;
+         WHEN "001" => t_pipe_y <= 100; t_pipe_size <= 100; b_pipe_y <= 480; b_pipe_size <= 120;
+        
+                 WHEN "010" => t_pipe_y <= 60; t_pipe_size <= 60; b_pipe_y <= 440; b_pipe_size <= 160;
+        
+                    WHEN "011" => t_pipe_y <= 20; t_pipe_size <= 20; b_pipe_y <= 400; b_pipe_size <= 200;
+        
+                     WHEN "100" => t_pipe_y <= 80; t_pipe_size <= 80; b_pipe_y <= 450; b_pipe_size <= 150;
+        
+                     WHEN "101" =>   t_pipe_y <= 150; t_pipe_size <= 150; b_pipe_y <= 540; b_pipe_size <= 60;
+                     WHEN "110" =>  t_pipe_y <= 120; t_pipe_size <= 120; b_pipe_y <= 500; b_pipe_size <= 100;
+        
+                     WHEN "111" =>  t_pipe_y <= 180; t_pipe_size <= 180; b_pipe_y <= 520; b_pipe_size <= 80;
+                END CASE;
+        END IF;
+      END IF;
+    END PROCESS;
+  ```
+
+* Whenever the game ends or collision occurs, the pipes are set back to their default starting position and it stops moving creating the sense that the game is frozen.
+* If game is and the pipe is not at the left edge of teh screen, it will move at constant velocity of -4 pixels
+* Once it reaches the end of the left screen, it will start 960, displaying the notion that the pipe wraps around from the opposite screen.
+* Once this occurs the pipes will change random height, which is influenced by the random input from the height_generator file
+  ![image](https://github.com/johnB-A/flappybird/assets/156035355/31ab3450-2e6b-46aa-af24-7d5408c67973)
+* We took the code from NANLAND and modify it to our needs. The codes geneates a seqeunce of pseudo-random numbers, using a LFSR, giving the notion that it's random.
+* The count variable resets 
+  
+
+
+
+  
   
 
