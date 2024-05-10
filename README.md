@@ -12,8 +12,21 @@ Very similar to the standard Flappy Bird game, the bird must avoid the obstacles
    * Create ten new source files of file type VHDL called clk_wiz_0, clk_wiz_0_clk_wiz, vga_sync, bird_logic, draw_coord, pipes, height_generator, leddec16, debounce and flappy
     - clk_wiz_0.vhd and clk_wiz_0_clk_wiz.vhd and vga_sync.vhd are the same files as in Lab 6
      - Everthing else is a new file for Flappy Bird
-   * Create a new constraint file of file type XDC called pong
+   * Create a new constraint file of file type XDC called flappy
    * Choose Nexys A7-100T board for the project
    * Click 'Finish'
+2. RUN Synthesis
+3. Run Implementation
+4. Attach VGA CONNECTOR TO THE board
+5. Generate bitstream, open hardware manager, and program device
+      * Click 'Generate Bitstream'
+      * Click 'Open Hardware Manager' and click 'Open Target' then 'Auto Connect'
+      * Click 'Program Device' then xc7a100t_0 to download flappy.bit to the Nexys A7-100T board
+      * Push BTNL to start the game and keep pressing BTNC to move the bird
+## DESCRIPTION OF THE TOP LEVEL BLOCK DIAGRAM
 
-5. Work on and edit code with the following modifications (depending on when you do this, it will be your Fourth, Fifth, or Sixth Lab Extension/Submission!)
+
+
+## Description of Inputs and Outputs going from the Vivado Project to the Nexys board
+![image](https://github.com/johnB-A/flappybird/assets/156035355/d39281e9-20d8-4775-974d-a70ab8e13cac)
+
