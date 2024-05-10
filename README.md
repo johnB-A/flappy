@@ -237,9 +237,94 @@ PIPES
 * Once this occurs the pipes will change random height, which is influenced by the random input from the height_generator file
   ![image](https://github.com/johnB-A/flappybird/assets/156035355/31ab3450-2e6b-46aa-af24-7d5408c67973)
 * We took the code from NANLAND and modify it to our needs. The codes geneates a seqeunce of pseudo-random numbers, using a LFSR, giving the notion that it's random.
-* The count variable resets 
-  
+* The cnt variable acts like the clock for the LFSR which means that it generates a random output once the pipe is at the end of the left edge of the screen. This output is used in the case statement of the pipe module to generate a random height for the pipe.
+*When Game ends, it resets to the  seqeunce of zeros, which will be the default height
+*Although this won't happen because the condition only occurs once the pipe is out of bounds on the left edge, so we added to reset their position when game ends, to give time to the player to manuever
 
+**Flappy file**
+*The main fucntion of the top file is just to connect the signals of the internal modules acting like it's putting lego blocks together
+*It contain two process, which was driving the mpx signal of the anodes to display the seven segment, same logic as followed in previous laughs, and the collision process.
+```
+   BEGIN
+S_RED <= P_RED AND B_RED;
+S_GREEN <= P_GREEN AND B_GREEN;
+S_BLUE <= P_BLUE AND B_BLUE;
+LED_MPX <= cnt(19 DOWNTO 17);
+
+mpx_refrsh: PROCESS(clk_in) is
+begin
+    if(rising_edge(clk_in)) THEN
+        cnt <= cnt + 1;
+     end if;
+ END PROCESS;
+ collide : PROCESS
+ BEGIN    
+      WAIT UNTIL RISING_EDGE(S_vsync); 
+       --logic for first pair pipe
+      IF (180+10) >= pipe_onex-pipe_w AND (180 - 10) <= (pipe_onex + pipe_w) THEN
+         IF ( (bird_pos +10) >= (t_pipe_y - t_pipe_size) AND (bird_pos-10) <= (t_pipe_y + t_pipe_size) ) OR
+            ( (bird_pos +10) >= (b_pipe_y - b_pipe_size) AND (bird_pos-10) <= (b_pipe_y + b_pipe_size) ) THEN
+            collision <= '1';
+          ELSE 
+            collision <= '0'; 
+          END IF;
+       --logic for second pair pipe 
+      ELSIF (180+10) >= pipe_twox-pipe_w AND (180 - 10) <= (pipe_twox + pipe_w) THEN
+         IF ( (bird_pos +10) >= (t_pipe_y2 - t_pipe_size2) AND (bird_pos-10) <= (t_pipe_y2 + t_pipe_size2) ) OR
+            ( (bird_pos +10) >= (b_pipe_y2 - b_pipe_size2) AND (bird_pos-10) <= (b_pipe_y2 + b_pipe_size2) ) THEN
+            collision <= '1';
+          ELSE 
+            collision <= '0';   
+         END IF;
+       ELSE
+              collision <= '0';
+      END IF;        
+ END PROCESS;    
+ SCORING : PROCESS 
+    BEGIN  
+        WAIT UNTIL rising_edge(S_vsync);
+            IF(GAME_STARTS = '0' or COLLISION = '1') THEN 
+                DISPLAY_S <= (others => '0');
+                temp <= "00";
+            ELSIF(GAME_STARTS = '1' ) then
+               IF((pipe_onex+pipe_w <= 160) AND (temp = "00"))  then
+                    DISPLAY_S <= DISPLAY_S +1;   
+                    temp <= "01"; 
+               ELSIF((pipe_twox+pipe_w <= 160) AND (temp = "01")) then
+                    DISPLAY_S <= DISPLAY_S +1;   
+                    temp <= "00";                 
+               ELSIF(pipe_onex+pipe_w > 160) AND (temp /= "01") then
+                    temp <= "00"; 
+                    DISPLAY_S <= DISPLAY_S;
+               ELSE
+                    DISPLAY_S <= DISPLAY_S;
+               END IF;
+            END IF;    
+END PROCESS;   
+ Display_S <= DISPLAY_S  ;
+```
+* The S_Red, and other signals with similar syntax are responsible for driving the VGA, they contain the outputs of the display of the pipe and bird/wing logic. Which will display a yellow bird and green pipes and a white background
+* Mpx responsible for driving the timing of the mpx pulse
+ * The logic of collision is that once the most right side of the bird is greater than the left and the left side is less than the right side of the pipe, it means there is a collision, so collision becomes high. Same logic applies when it hits the top of the bird, is greater than the lower end of the pipe, collision is detected
+ * For the score, we want to increase the score every time the bird is horizontally ahead of a pipe, although we have to create a flag so that once this condition occurs it doesn't keep increasing, just once.
+ * We can take advatange of else if statements since it's based off priority  so once the bird is ahead of the first pipe score increases, and we set temp to "01". When temp is "01" and the second pipe is behind the bird, scores increases, although a possible issue is the since second pipe is always a head of the first pipe the statement is always true, so we added for the last els if statement that when themp is "01", just display score
+ 
+
+
+
+
+## Difficulties
+![image](https://github.com/johnB-A/flappybird/assets/156035355/14caf4b6-ea3a-4beb-ae9f-cc799468516c)
+
+
+![image](https://github.com/johnB-A/flappybird/assets/156035355/1bcf6196-a340-4e41-b3d1-a67fd8d29a96)
+
+
+  * Some of the difficulties shown above was the the image of the pipes at times were distorted but got fixed
+  * The biggest issue was the transitioning of the pipe which it wasn't doing it properly beause pipe_onexmotion was being overwritten. 
+  * Also time constraint, since I also had to study for Controls final which was around the same time as this project, made difficult to juggle both thinsg.
+
+## 
 
 
   
