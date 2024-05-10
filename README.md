@@ -28,16 +28,18 @@ Very similar to the standard Flappy Bird game, the bird must avoid the obstacles
 
 
 ## Description of Inputs and Outputs going from the Vivado Project to the Nexys board
-`set_property -dict { PACKAGE_PIN N17 IOSTANDARD LVCMOS33 } [get_ports { BTNC }]; #IO_L9P_T1_DQS_14 Sch=btnc
+```
+set_property -dict { PACKAGE_PIN N17 IOSTANDARD LVCMOS33 } [get_ports { BTNC }]; #IO_L9P_T1_DQS_14 Sch=btnc
 set_property -dict { PACKAGE_PIN P17 IOSTANDARD LVCMOS33 } [get_ports { RESET }]; #IO_L12P_T1_MRCC_14 Sch=btnl
 set_property -dict { PACKAGE_PIN E3 IOSTANDARD LVCMOS33 } [get_ports {clk_in}];
-create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports {clk_in}];`
+create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports {clk_in}];
+```
 * RESET and BTNC are in the inputs of the top level including the clock. RESET (BTNL) is used to start start the game. Once the game starts it this button will only be effective once the game ends.
 * BTNC is used to control the vertical motion of the bird
 * clk_in represents the main oscillator of the system, at 100 MHZ
 
-* 
-`set_property -dict { PACKAGE_PIN B11 IOSTANDARD LVCMOS33 } [get_ports { VGA_hsync }]; #IO_L4P_T0_15 Sch=vga_hs
+```
+  set_property -dict { PACKAGE_PIN B11 IOSTANDARD LVCMOS33 } [get_ports { VGA_hsync }]; #IO_L4P_T0_15 Sch=vga_hs
  	set_property -dict { PACKAGE_PIN B12 IOSTANDARD LVCMOS33 } [get_ports { VGA_vsync }]; #IO_L3N_T0_DQS_AD1N_15 Sch=vga_vs
 	set_property -dict { PACKAGE_PIN B7 IOSTANDARD LVCMOS33 } [get_ports { VGA_blue[0] }]; #IO_L2P_T0_AD12P_35 Sch=vga_b[0]
 	set_property -dict { PACKAGE_PIN C7 IOSTANDARD LVCMOS33 } [get_ports { VGA_blue[1] }]; #IO_L4N_T0_35 Sch=vga_b[1]
@@ -57,7 +59,8 @@ set_property -dict {PACKAGE_PIN P15 IOSTANDARD LVCMOS33} [get_ports {SEG7_seg[2]
 set_property -dict {PACKAGE_PIN K13 IOSTANDARD LVCMOS33} [get_ports {SEG7_seg[3]}]
 set_property -dict {PACKAGE_PIN K16 IOSTANDARD LVCMOS33} [get_ports {SEG7_seg[4]}]
 set_property -dict {PACKAGE_PIN R10 IOSTANDARD LVCMOS33} [get_ports {SEG7_seg[5]}]
-set_property -dict {PACKAGE_PIN T10 IOSTANDARD LVCMOS33} [get_ports {SEG7_seg[6]}]`
+set_property -dict {PACKAGE_PIN T10 IOSTANDARD LVCMOS33} [get_ports {SEG7_seg[6]}]
+```
 * The constraints above are basically the same we used for preivous labs involving displaying the vga driver and anodes on the Board
 ## LOGIC OF THE GAME AND MODIFICATIONS)
 * 7 out of the 10 files were either from scratch or inspired from previous code
@@ -70,14 +73,17 @@ set_property -dict {PACKAGE_PIN T10 IOSTANDARD LVCMOS33} [get_ports {SEG7_seg[6]
 * Bird logic is responsible for the bird's apperance and movement.
 * Within the Bird_logic module it contains a draw_coord module which basically draws the shape of the bird and its wing(both are circles). Same logic as drawing the ball from lab3
 * The idea is to have the bird stationary in the axis, but moving vertically. Here are the coordinates:
-  `SIGNAL bird_x  : STD_LOGIC_VECTOR(10 DOWNTO 0) := CONV_STD_LOGIC_VECTOR(180, 11);
+  ```
+  SIGNAL bird_x  : STD_LOGIC_VECTOR(10 DOWNTO 0) := CONV_STD_LOGIC_VECTOR(180, 11);
 	SIGNAL bird_y  : STD_LOGIC_VECTOR(10 DOWNTO 0) := CONV_STD_LOGIC_VECTOR(300, 11);
 		--Initial wing position
 	SIGNAL wing_x  : STD_LOGIC_VECTOR(10 DOWNTO 0) := CONV_STD_LOGIC_VECTOR(160, 11); -- left outer edge of bird l
-	SIGNAL wing_y  : STD_LOGIC_VECTOR(10 DOWNTO 0) := CONV_STD_LOGIC_VECTOR(300, 11);`
+	SIGNAL wing_y  : STD_LOGIC_VECTOR(10 DOWNTO 0) := CONV_STD_LOGIC_VECTOR(300, 11);
+  ```
   * The bird initally starts towards the left of the screen at the middle height. The bird is stationary horiztonally but moves vertically
     
-   `birdie: draw_coord port map(
+   ```
+  birdie: draw_coord port map(
     v_sync => v_sync,
     pixel_row => pixel_row,
     pixel_col => pixel_col,
@@ -95,7 +101,7 @@ wings: draw_coord port map(
     y_size => wing_y,
     b_size => wing_size,
     shape_on => wing_on   
-);`
+);
 bird_motion: PROCESS IS
 BEGIN
     p_BTNC <= BTNC;
@@ -129,7 +135,7 @@ BEGIN
 END PROCESS;	
 bird_pos <= bird_y;
 wing_pos <= wing_y;		
-END Behavioral;`
+END Behavioral;
 *The idea is that the bird moves when button is released, for this to occur the current button must be low, the previous value was high, which means there is a falling edge. That's why we have the p_BTNC signal
 *The bird logic as shown above is also ressponible for the game_on signal, so when the game is off, and RESET high, game starts. This condition won't come into effect if RESET is pressed until the Bird collides, because that's when game_on becomes zero
 *There is no special reason behind the numbers of the movement of the bird, besides trial and error, but the main idea is whne button is released bird moves up the screen 54 pixels, if not then bird falls at a constant 3 pixels down.
