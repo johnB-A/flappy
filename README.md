@@ -31,8 +31,9 @@ Very similar to the standard Flappy Bird game, the bird must avoid the obstacles
       * Click 'Program Device' then xc7a100t_0 to download flappy.bit to the Nexys A7-100T board
       * Push BTNL to start the game and keep pressing BTNC to move the bird
 ## DESCRIPTION OF THE TOP LEVEL BLOCK DIAGRAM
+![image](https://github.com/johnB-A/flappybird/assets/156035355/a422896f-2e6d-4d45-994b-c2d82ca5bf2c)
 
-
+* Draw io was used to draw the block diagram. This block diagram is just a rough sketch of how the components connect with each on the top level surface.
 
 ## Description of Inputs and Outputs going from the Vivado Project to the Nexys board
 ```
@@ -322,8 +323,9 @@ END PROCESS;
 
   * Some of the difficulties shown above was the the image of the pipes at times were distorted but got fixed
   * The biggest issue was the transitioning of the pipe which it wasn't doing it properly beause pipe_onexmotion was being overwritten. 
-  * Also time constraint, since I also had to study for Controls final which was around the same time as this project, made difficult to juggle both thinsg.
-
+  * Also time constraint, since I(John) also had to study for Controls final which was around the same time as this project, made difficult to juggle both thinsg.
+## Timeline
+* Not really aware of the timeline, but started committing the 28th and made the most progress the past 2 days.
 ## Summary
 John Responsible for:
 * Creating the debounce
@@ -334,9 +336,9 @@ John Responsible for:
 * Top file connecting all the modules together
 
  Lawrence:
- *Helped on score logic
- *Shape of the bird and wing
- *Pipe shape
+ * Helped on score logic
+ * Shape of the bird and wing
+ * Pipe shape
 
 
 
